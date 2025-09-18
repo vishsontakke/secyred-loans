@@ -20,7 +20,11 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <BrowserRouter
+        basename={(import.meta.env.BASE_URL?.endsWith("/")
+          ? import.meta.env.BASE_URL.slice(0, -1)
+          : import.meta.env.BASE_URL) as string}
+      >
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1">
