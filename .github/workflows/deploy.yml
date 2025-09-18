@@ -23,8 +23,7 @@ jobs:
 
       - name: Setup PNPM
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.14.0
+        # Version will be taken from package.json "packageManager"
 
       - name: Setup Node
         uses: actions/setup-node@v4
