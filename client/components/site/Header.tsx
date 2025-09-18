@@ -7,8 +7,7 @@ export default function Header({ className }: { className?: string }) {
     <header className={cn("sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur", className)}>
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500" />
-          <span className="text-lg font-semibold tracking-tight">LoanTap</span>
+         <img src="/ltflow.svg" alt=""  className="w-40 h-40"/>
         </Link>
         <nav className="hidden items-center gap-6 md:flex">
           <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How it works</a>

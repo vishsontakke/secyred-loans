@@ -650,9 +650,9 @@ function Hero() {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_50%_-100px,rgba(99,102,241,0.25),rgba(255,255,255,0))]" />
       <div className="container mx-auto grid items-center gap-8 px-4 pb-16 pt-12 md:grid-cols-2 md:pb-24 md:pt-16">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-indigo-600/10 px-3 py-1 text-xs text-indigo-700 ring-1 ring-inset ring-indigo-600/20">
+          {/* <div className="inline-flex items-center gap-2 rounded-full bg-indigo-600/10 px-3 py-1 text-xs text-indigo-700 ring-1 ring-inset ring-indigo-600/20">
             New: Mutual fund pledging UI
-          </div>
+          </div> */}
           <h1 className="mt-4 text-4xl font-extrabold tracking-tight md:text-5xl">
             Loan against mutual funds, in minutes
           </h1>
