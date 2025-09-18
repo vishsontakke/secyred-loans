@@ -38,12 +38,22 @@ jobs:
       # Build only the client with correct base for GitHub Pages
       - name: Build client (Vite)
         run: |
-          pnpm exec vite build --base "/${{ github.event.repository.name }}/"
+          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then 
+            BASE="/"
+          else
+            BASE="/${{ github.event.repository.name }}/"
+          fi
+          echo "Using base: $BASE"
+          pnpm exec vite build --base "$BASE"
 
       - name: Create SPA fallback and disable Jekyll
         run: |
           cp dist/spa/index.html dist/spa/404.html
           touch dist/spa/.nojekyll
+          if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then
+            echo "${{ vars.CUSTOM_DOMAIN }}" > dist/spa/CNAME
+            echo "Wrote CNAME for custom domain: ${{ vars.CUSTOM_DOMAIN }}"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
