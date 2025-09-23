@@ -27,11 +27,22 @@ type Holding = {
   ltv: number; // max loan-to-value (0-1)
 };
 
-const DEFAULT_FUNDS: Holding[] = [
-  { symbol: "HDFCFLEXI-DG", name: "HDFC Flexi Cap Fund - Direct Growth", price: 160.25, qty: 250, ltv: 0.5 },
-  { symbol: "MIRAE-LARGE-DG", name: "Mirae Asset Large Cap Fund - Direct Growth", price: 120.9, qty: 300, ltv: 0.5 },
-  { symbol: "ICICIBLUE-DG", name: "ICICI Pru Bluechip Fund - Direct Growth", price: 105.1, qty: 280, ltv: 0.5 },
-  { symbol: "AXIS-SMALL-DG", name: "Axis Small Cap Fund - Direct Growth", price: 75.6, qty: 220, ltv: 0.4 },
+type AssetCategory = "Mutual Fund" | "Stock" | "Insurance";
+
+type Asset = Holding & { category: AssetCategory };
+
+const DEFAULT_ASSETS: Asset[] = [
+  // Mutual funds
+  { category: "Mutual Fund", symbol: "HDFCFLEXI-DG", name: "HDFC Flexi Cap Fund - Direct Growth", price: 160.25, qty: 250, ltv: 0.5 },
+  { category: "Mutual Fund", symbol: "MIRAE-LARGE-DG", name: "Mirae Asset Large Cap Fund - Direct Growth", price: 120.9, qty: 300, ltv: 0.5 },
+  { category: "Mutual Fund", symbol: "ICICIBLUE-DG", name: "ICICI Pru Bluechip Fund - Direct Growth", price: 105.1, qty: 280, ltv: 0.5 },
+  { category: "Mutual Fund", symbol: "AXIS-SMALL-DG", name: "Axis Small Cap Fund - Direct Growth", price: 75.6, qty: 220, ltv: 0.4 },
+  // Stocks
+  { category: "Stock", symbol: "TCS", name: "Tata Consultancy Services", price: 4040, qty: 30, ltv: 0.5 },
+  { category: "Stock", symbol: "RELIANCE", name: "Reliance Industries", price: 2930, qty: 20, ltv: 0.5 },
+  // Insurance (surrender value based, typically lower LTV)
+  { category: "Insurance", symbol: "LIC-ULIP-01", name: "LIC Wealth Plus (ULIP)", price: 100, qty: 500, ltv: 0.3 },
+  { category: "Insurance", symbol: "HDFCLIFE-TRAD-01", name: "HDFC Life Sanchay Plus", price: 100, qty: 400, ltv: 0.35 },
 ];
 
 const steps = [
@@ -39,7 +50,7 @@ const steps = [
   "Personal",
   "Income",
   "KYC",
-  "Mutual Funds",
+  "Assets",
   "Loan",
   "Review",
   "E‑sign",
@@ -79,14 +90,17 @@ export default function Index() {
   const [kycOtpSent, setKycOtpSent] = useState(false);
   const [kycVerified, setKycVerified] = useState(false);
 
-  // Mutual funds / Loan
-  const [holdings] = useState<Holding[]>(DEFAULT_FUNDS);
+  // Assets / Loan
+  const [holdings] = useState<Asset[]>(DEFAULT_ASSETS);
+  const [assetCategory, setAssetCategory] = useState<AssetCategory>("Mutual Fund");
   const [selected, setSelected] = useState<Record<string, number>>({});
   const [tenure, setTenure] = useState(12);
   const [amount, setAmount] = useState<number>(0);
   const [accepted, setAccepted] = useState(false);
   const [esignOtp, setEsignOtp] = useState("");
   const [esignComplete, setEsignComplete] = useState(false);
+
+  const visibleHoldings = useMemo(() => holdings.filter(h => h.category === assetCategory), [assetCategory, holdings]);
 
   const portfolioValue = useMemo(
     () => holdings.reduce((sum, h) => sum + h.price * h.qty, 0),
@@ -357,30 +371,41 @@ export default function Index() {
             </Card>
           )}
 
-          {step === "Mutual Funds" && (
+          {step === "Assets" && (
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Select mutual funds to pledge</CardTitle>
+                <CardTitle>Select assets to pledge</CardTitle>
                 <CardDescription>
-                  Choose units to pledge. Eligibility is computed from units × NAV × LTV.
+                  Choose units to pledge. Eligibility is computed from units × price × LTV.
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="mb-4 flex items-center gap-3">
+                  <Label>Asset type</Label>
+                  <Select value={assetCategory} onValueChange={(v) => setAssetCategory(v as AssetCategory)}>
+                    <SelectTrigger className="w-56"><SelectValue placeholder="Select asset" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Mutual Fund">Mutual funds</SelectItem>
+                      <SelectItem value="Stock">Stocks</SelectItem>
+                      <SelectItem value="Insurance">Insurance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="overflow-hidden rounded-lg border">
                   <div className="grid grid-cols-12 bg-muted/50 p-3 text-xs font-medium text-muted-foreground">
-                    <div className="col-span-5">Mutual fund</div>
+                    <div className="col-span-5">Asset</div>
                     <div className="col-span-2 text-right">Units</div>
-                    <div className="col-span-2 text-right">NAV</div>
+                    <div className="col-span-2 text-right">Price</div>
                     <div className="col-span-1 text-right">LTV</div>
                     <div className="col-span-2 text-right">Pledge Units</div>
                   </div>
-                  {holdings.map((h) => {
+                  {visibleHoldings.map((h) => {
                     const pledged = selected[h.symbol] ?? 0;
                     return (
                       <div key={h.symbol} className="grid grid-cols-12 items-center border-t p-3 text-sm">
                         <div className="col-span-5">
                           <div className="font-medium">{h.name}</div>
-                          <div className="text-xs text-muted-foreground">{h.symbol}</div>
+                          <div className="text-xs text-muted-foreground">{h.symbol} • {h.category}</div>
                         </div>
                         <div className="col-span-2 text-right">{h.qty}</div>
                         <div className="col-span-2 text-right">₹{h.price.toLocaleString()}</div>
