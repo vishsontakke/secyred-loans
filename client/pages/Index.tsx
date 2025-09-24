@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -29,28 +30,29 @@ type Holding = {
 
 type AssetCategory = "Mutual Fund" | "Stock" | "Insurance";
 
-type Asset = Holding & { category: AssetCategory };
+type Asset = Holding & { category: AssetCategory; isEligible: boolean };
 
 const DEFAULT_ASSETS: Asset[] = [
   // Mutual funds
-  { category: "Mutual Fund", symbol: "HDFCFLEXI-DG", name: "HDFC Flexi Cap Fund - Direct Growth", price: 160.25, qty: 250, ltv: 0.5 },
-  { category: "Mutual Fund", symbol: "MIRAE-LARGE-DG", name: "Mirae Asset Large Cap Fund - Direct Growth", price: 120.9, qty: 300, ltv: 0.5 },
-  { category: "Mutual Fund", symbol: "ICICIBLUE-DG", name: "ICICI Pru Bluechip Fund - Direct Growth", price: 105.1, qty: 280, ltv: 0.5 },
-  { category: "Mutual Fund", symbol: "AXIS-SMALL-DG", name: "Axis Small Cap Fund - Direct Growth", price: 75.6, qty: 220, ltv: 0.4 },
+  { category: "Mutual Fund", symbol: "HDFCFLEXI-DG", name: "HDFC Flexi Cap Fund - Direct Growth", price: 160.25, qty: 250, ltv: 0.5, isEligible: true },
+  { category: "Mutual Fund", symbol: "MIRAE-LARGE-DG", name: "Mirae Asset Large Cap Fund - Direct Growth", price: 120.9, qty: 300, ltv: 0.5, isEligible: true },
+  { category: "Mutual Fund", symbol: "ICICIBLUE-DG", name: "ICICI Pru Bluechip Fund - Direct Growth", price: 105.1, qty: 280, ltv: 0.5, isEligible: true },
+  { category: "Mutual Fund", symbol: "AXIS-SMALL-DG", name: "Axis Small Cap Fund - Direct Growth", price: 75.6, qty: 220, ltv: 0.4, isEligible: true },
   // Stocks
-  { category: "Stock", symbol: "TCS", name: "Tata Consultancy Services", price: 4040, qty: 30, ltv: 0.5 },
-  { category: "Stock", symbol: "RELIANCE", name: "Reliance Industries", price: 2930, qty: 20, ltv: 0.5 },
+  { category: "Stock", symbol: "TCS", name: "Tata Consultancy Services", price: 4040, qty: 30, ltv: 0.5, isEligible: true },
+  { category: "Stock", symbol: "RELIANCE", name: "Reliance Industries", price: 2930, qty: 20, ltv: 0.5, isEligible: false },
   // Insurance (surrender value based, typically lower LTV)
-  { category: "Insurance", symbol: "LIC-ULIP-01", name: "LIC Wealth Plus (ULIP)", price: 100, qty: 500, ltv: 0.3 },
-  { category: "Insurance", symbol: "HDFCLIFE-TRAD-01", name: "HDFC Life Sanchay Plus", price: 100, qty: 400, ltv: 0.35 },
+  { category: "Insurance", symbol: "LIC-ULIP-01", name: "LIC Wealth Plus (ULIP)", price: 100, qty: 500, ltv: 0.3, isEligible: false },
+  { category: "Insurance", symbol: "HDFCLIFE-TRAD-01", name: "HDFC Life Sanchay Plus", price: 100, qty: 400, ltv: 0.35, isEligible: true },
 ];
 
 const steps = [
   "Profile",
+  "Assets",
   "Personal",
   "Income",
   "KYC",
-  "Assets",
+ 
   "Loan",
   "Review",
   "E‑sign",
@@ -401,11 +403,19 @@ export default function Index() {
                   </div>
                   {visibleHoldings.map((h) => {
                     const pledged = selected[h.symbol] ?? 0;
+                    const rowClass = h.isEligible ? "bg-green-50/60" : "bg-red-50/60";
                     return (
-                      <div key={h.symbol} className="grid grid-cols-12 items-center border-t p-3 text-sm">
+                      <div key={h.symbol} className={`grid grid-cols-12 items-center border-t p-3 text-sm ${rowClass}`}>
                         <div className="col-span-5">
                           <div className="font-medium">{h.name}</div>
-                          <div className="text-xs text-muted-foreground">{h.symbol} • {h.category}</div>
+                          <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{h.symbol} • {h.category}</span>
+                            {h.isEligible ? (
+                              <Badge className="bg-green-600 hover:bg-green-600">Eligible</Badge>
+                            ) : (
+                              <Badge variant="destructive">Not eligible</Badge>
+                            )}
+                          </div>
                         </div>
                         <div className="col-span-2 text-right">{h.qty}</div>
                         <div className="col-span-2 text-right">₹{h.price.toLocaleString()}</div>
@@ -416,6 +426,7 @@ export default function Index() {
                             min={0}
                             max={h.qty}
                             value={pledged}
+                            disabled={!h.isEligible}
                             onChange={(e) =>
                               setSelected((s) => ({ ...s, [h.symbol]: Math.max(0, Math.min(Number(e.target.value || 0), h.qty)) }))
                             }
@@ -662,7 +673,7 @@ export default function Index() {
       <section id="help" className="bg-muted/30">
         <div className="container mx-auto px-4 py-16">
           <h2 className="text-2xl font-semibold">Need help?</h2>
-          <p className="mt-2 text-muted-foreground">Email support@seculoan.app</p>
+          <p className="mt-2 text-muted-foreground">Email support@ltflow.com</p>
         </div>
       </section>
     </div>
@@ -679,7 +690,7 @@ function Hero() {
             New: Mutual fund pledging UI
           </div> */}
           <h1 className="mt-4 text-4xl font-extrabold tracking-tight md:text-5xl">
-            Loan against mutual funds, in minutes
+            Loan against securities, in minutes
           </h1>
           <p className="mt-3 max-w-prose text-muted-foreground">
             Pledge mutual fund units and unlock instant liquidity. Keep your investments while accessing funds.
