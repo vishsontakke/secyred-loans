@@ -48,11 +48,10 @@ const DEFAULT_ASSETS: Asset[] = [
 
 const steps = [
   "Profile",
-  "Assets",
   "Personal",
   "Income",
   "KYC",
- 
+  "Assets",
   "Loan",
   "Review",
   "E‑sign",
