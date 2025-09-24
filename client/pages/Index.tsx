@@ -35,7 +35,7 @@ type Asset = Holding & { category: AssetCategory; isEligible: boolean };
 const DEFAULT_ASSETS: Asset[] = [
   // Mutual funds
   { category: "Mutual Fund", symbol: "HDFCFLEXI-DG", name: "HDFC Flexi Cap Fund - Direct Growth", price: 160.25, qty: 250, ltv: 0.5, isEligible: true },
-  { category: "Mutual Fund", symbol: "MIRAE-LARGE-DG", name: "Mirae Asset Large Cap Fund - Direct Growth", price: 120.9, qty: 300, ltv: 0.5, isEligible: true },
+  { category: "Mutual Fund", symbol: "MIRAE-LARGE-DG", name: "Mirae Asset Large Cap Fund - Direct Growth", price: 120.9, qty: 300, ltv: 0.5, isEligible: false },
   { category: "Mutual Fund", symbol: "ICICIBLUE-DG", name: "ICICI Pru Bluechip Fund - Direct Growth", price: 105.1, qty: 280, ltv: 0.5, isEligible: true },
   { category: "Mutual Fund", symbol: "AXIS-SMALL-DG", name: "Axis Small Cap Fund - Direct Growth", price: 75.6, qty: 220, ltv: 0.4, isEligible: true },
   // Stocks

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Clock, CreditCard, IndianRupee, ShieldCheck } from "lucide-react";
+import { demoRows, RecordType, Step } from "./adminData";
 
 export default function Admin() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -38,7 +39,7 @@ export default function Admin() {
           <Card>
             <CardHeader>
               <CardTitle>Customer journeys</CardTitle>
-              <CardDescription>Mutual fund lien journeys with payment activity</CardDescription>
+              <CardDescription>Securities lien journeys (Mutual funds, Stocks, Insurance)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -62,7 +63,7 @@ export default function Admin() {
                           <div className="text-xs text-muted-foreground">{r.id}</div>
                         </td>
                         <td className="p-3">
-                          <div className="font-medium">Loan against Mutual Funds</div>
+                          <div className="font-medium">Loan against {r.assetType}</div>
                           <div className="text-xs text-muted-foreground">Effective LTV {r.ltv}%</div>
                         </td>
                         <td className="p-3">₹{r.amount.toLocaleString()}</td>
@@ -111,35 +112,6 @@ export default function Admin() {
     );
   }
 }
-
-type Payment = { type: 'Debit' | 'Credit'; amount: number };
-
-type LedgerEntry = { date: string; type: 'Debit' | 'Credit'; amount: number; note: string };
-
-type Step = { label: string; at: string };
-
-type Details = {
-  pan: string;
-  mobile: string;
-  email: string;
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-};
-
-type RecordType = {
-  id: string;
-  customer: string;
-  amount: number;
-  tenure: number;
-  ltv: number;
-  lastPayment: Payment;
-  timeline: Step[];
-  status: 'In Progress' | 'Completed';
-  details: Details;
-  ledger: LedgerEntry[]; // includes disbursal and payments
-};
 
 function Timeline({ steps }: { steps: Step[] }) {
   return (

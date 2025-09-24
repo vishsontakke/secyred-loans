@@ -14,6 +14,8 @@ export type Details = {
   pincode: string;
 };
 
+export type AssetType = 'Mutual Fund' | 'Stock' | 'Insurance';
+
 export type RecordType = {
   id: string;
   customer: string;
@@ -25,6 +27,7 @@ export type RecordType = {
   status: 'In Progress' | 'Completed';
   details: Details;
   ledger: LedgerEntry[]; // includes disbursal and payments
+  assetType: AssetType;
 };
 
 export const demoRows: RecordType[] = [
@@ -34,6 +37,7 @@ export const demoRows: RecordType[] = [
     amount: 250000,
     tenure: 12,
     ltv: 48,
+    assetType: 'Mutual Fund',
     lastPayment: { type: 'Debit', amount: 12500 },
     timeline: [
       { label: 'Profile', at: '2025-09-10' },
@@ -62,6 +66,7 @@ export const demoRows: RecordType[] = [
     amount: 180000,
     tenure: 9,
     ltv: 50,
+    assetType: 'Stock',
     lastPayment: { type: 'Credit', amount: 5000 },
     timeline: [
       { label: 'Profile', at: '2025-09-05' },
@@ -89,6 +94,7 @@ export const demoRows: RecordType[] = [
     amount: 320000,
     tenure: 18,
     ltv: 45,
+    assetType: 'Mutual Fund',
     lastPayment: { type: 'Debit', amount: 18000 },
     timeline: [
       { label: 'Profile', at: '2025-08-20' },
@@ -118,6 +124,7 @@ export const demoRows: RecordType[] = [
     amount: 150000,
     tenure: 6,
     ltv: 50,
+    assetType: 'Insurance',
     lastPayment: { type: 'Credit', amount: 3000 },
     timeline: [
       { label: 'Profile', at: '2025-09-01' },
@@ -149,6 +156,7 @@ export const demoRows: RecordType[] = [
     amount: 275000,
     tenure: 12,
     ltv: 46,
+    assetType: 'Stock',
     lastPayment: { type: 'Debit', amount: 13750 },
     timeline: [
       { label: 'Profile', at: '2025-09-03' },

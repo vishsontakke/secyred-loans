@@ -109,44 +109,90 @@ export default function AdminCustomer() {
             <TabsContent value="cas">
               <Card>
                 <CardHeader>
-                  <CardTitle>CAS Data</CardTitle>
-                  <CardDescription>Consolidated account statement snapshot</CardDescription>
+                  <CardTitle>Portfolio Snapshot</CardTitle>
+                  <CardDescription>Mutual funds, Stocks and Insurance summary</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 sm:grid-cols-4">
-                    <CasMetric label="Total Portfolio Value" value="₹1,77,909" />
-                    <CasMetric label="Eligible Funds Value" value="₹1,76,425" />
-                    <CasMetric label="Non‑Eligible Funds" value="₹1,484" />
+                    <CasMetric label="Total Portfolio Value" value="₹6,77,909" />
+                    <CasMetric label="Eligible Value" value="₹4,10,000" />
+                    <CasMetric label="Non‑Eligible Value" value="₹2,67,909" />
                     <CasMetric label="Eligible Limit" value={`₹${Math.round(rec.amount*0.32).toLocaleString()}`} />
                   </div>
-                  <div className="mt-6 overflow-hidden rounded-lg border">
+
+                  {/* Mutual funds */}
+                  <p className="mt-6 text-sm font-medium">Mutual funds</p>
+                  <div className="mt-2 overflow-hidden rounded-lg border">
                     <table className="w-full text-sm">
                       <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
                         <tr>
                           <th className="p-3">Fund Name</th>
-                          <th className="p-3">Folio No.</th>
-                          <th className="p-3">ISIN</th>
                           <th className="p-3 text-right">Units</th>
-                          <th className="p-3 text-right">Eligible Limit</th>
-                          <th className="p-3">Repository</th>
+                          <th className="p-3 text-right">Eligible</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr className="border-t">
-                          <td className="p-3">PGIM India Midcap Fund – Direct Plan Growth</td>
-                          <td className="p-3">91018338165</td>
-                          <td className="p-3">INF246L01DV3</td>
-                          <td className="p-3 text-right">2,345.46</td>
-                          <td className="p-3 text-right">₹76,425</td>
-                          <td className="p-3">KFIN</td>
+                          <td className="p-3">HDFC Flexi Cap Fund – Direct Growth</td>
+                          <td className="p-3 text-right">250.00</td>
+                          <td className="p-3 text-right">₹20,000</td>
+                        </tr>
+                        <tr className="border-t bg-red-50/60">
+                          <td className="p-3">Mirae Asset Large Cap Fund – Direct Growth</td>
+                          <td className="p-3 text-right">300.00</td>
+                          <td className="p-3 text-right">Not eligible</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Stocks */}
+                  <p className="mt-6 text-sm font-medium">Stocks</p>
+                  <div className="mt-2 overflow-hidden rounded-lg border">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+                        <tr>
+                          <th className="p-3">Stock</th>
+                          <th className="p-3 text-right">Qty</th>
+                          <th className="p-3 text-right">Eligible</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-t">
+                          <td className="p-3">TCS</td>
+                          <td className="p-3 text-right">30</td>
+                          <td className="p-3 text-right">₹45,000</td>
+                        </tr>
+                        <tr className="border-t bg-red-50/60">
+                          <td className="p-3">RELIANCE</td>
+                          <td className="p-3 text-right">20</td>
+                          <td className="p-3 text-right">Not eligible</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Insurance */}
+                  <p className="mt-6 text-sm font-medium">Insurance</p>
+                  <div className="mt-2 overflow-hidden rounded-lg border">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+                        <tr>
+                          <th className="p-3">Policy</th>
+                          <th className="p-3 text-right">Units</th>
+                          <th className="p-3 text-right">Eligible</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-t bg-red-50/60">
+                          <td className="p-3">LIC Wealth Plus (ULIP)</td>
+                          <td className="p-3 text-right">500</td>
+                          <td className="p-3 text-right">Not eligible</td>
                         </tr>
                         <tr className="border-t">
-                          <td className="p-3">Motilal Oswal Midcap Fund – Direct Plan Growth</td>
-                          <td className="p-3">910130943875</td>
-                          <td className="p-3">INF247L01A45</td>
-                          <td className="p-3 text-right">12.73</td>
-                          <td className="p-3 text-right">₹3,966</td>
-                          <td className="p-3">CAMS</td>
+                          <td className="p-3">HDFC Life Sanchay Plus</td>
+                          <td className="p-3 text-right">400</td>
+                          <td className="p-3 text-right">₹15,000</td>
                         </tr>
                       </tbody>
                     </table>
@@ -168,6 +214,7 @@ export default function AdminCustomer() {
                     <AppMetric label="Tenure" value={`${rec.tenure} months`} />
                     <AppMetric label="Amount" value={`₹${rec.amount.toLocaleString()}`} />
                     <AppMetric label="LTV" value={`${rec.ltv}%`} />
+                    <AppMetric label="Asset type" value={rec.assetType as string} />
                     <AppMetric label="Status" value={rec.status} />
                   </div>
                 </CardContent>
