@@ -129,10 +129,13 @@ export default function Index() {
   // Validations
   const isProfileValid = fullName.trim().length > 2 && /^([A-Z]{5}[0-9]{4}[A-Z])$/.test(pan.trim().toUpperCase());
   const isPersonalValid =
-    !!dob && /\d{4}-\d{2}-\d{2}/.test(dob) &&
-    /^[6-9]\d{9}$/.test(mobile) &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
-    address1.trim().length > 3 && city.trim().length > 1 && state.trim().length > 1 && /^\d{6}$/.test(pincode);
+  dob &&
+  mobile.trim().length === 10 && // just length check
+  email.includes("@") && // basic presence check
+  address1.trim().length > 0 &&
+  city.trim().length > 0 &&
+  state.trim().length > 0 &&
+  pincode.trim().length === 6; // no regex
   const isIncomeValid = employmentType.length > 0 && annualIncome > 0;
   const isKycReadyToSend = aadhaar.replace(/\s/g, '').length === 12 && kycConsent;
   const isKycValid = kycVerified;
