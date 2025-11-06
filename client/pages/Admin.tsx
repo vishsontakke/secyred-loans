@@ -35,7 +35,17 @@ export default function Admin() {
             <StatCard title="Completed" value={rows.filter(r => r.status === 'Completed').length.toString()} icon={<CheckCircle2 className="h-5 w-5" />} />
             <StatCard title="Total disbursed" value={`₹${totalDisbursed.toLocaleString()}`} icon={<IndianRupee className="h-5 w-5" />} />
           </div>
-
+          
+          {/* Quick Actions */}
+          <div className="flex gap-3">
+            <Link to="/admin/disbursed">
+              <Button className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700">
+                <CreditCard className="h-4 w-4 mr-2" />
+                View Disbursed Loans
+              </Button>
+            </Link>
+          </div>
+          
           <Card>
             <CardHeader>
               <CardTitle>Customer journeys</CardTitle>
@@ -200,8 +210,6 @@ export default function Admin() {
                               </div>
                             </div>
                           </td>
-
-
                           <td className="p-3 text-right space-x-2">
                             <Button size="sm" asChild variant="outline">
                               <Link to={`/admin/${r.id}`}>View</Link>
