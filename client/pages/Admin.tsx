@@ -41,144 +41,187 @@ export default function Admin() {
               <CardTitle>Customer journeys</CardTitle>
               <CardDescription>Securities lien journeys (Mutual funds, Stocks, Insurance)</CardDescription>
             </CardHeader>
-              <CardContent>
-  <div className="overflow-x-auto">
-    <table className="w-full min-w-[1150px] text-sm">
-      <thead>
-        <tr className="bg-muted/50 text-left text-xs text-muted-foreground uppercase tracking-wide">
-          <th className="p-3 font-medium">Customer</th>
-          <th className="p-3 font-medium">Journey</th>
-          <th className="p-3 font-medium">Amount</th>
-          <th className="p-3 font-medium">Tenure</th>
-          <th className="p-3 font-medium">Payments</th>
-          <th className="p-3 font-medium">Timeline</th>
-          <th className="p-3 font-medium">Eligibility Insights</th>
-          <th className="p-3 font-medium text-right">Action</th>
-        </tr>
-      </thead>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[1150px] text-sm">
+                  <thead>
+                    <tr className="bg-muted/50 text-left text-xs text-muted-foreground uppercase tracking-wide">
+                      <th className="p-3 font-medium">Customer</th>
+                      <th className="p-3 font-medium">Journey</th>
+                      <th className="p-3 font-medium">Amount</th>
+                      <th className="p-3 font-medium">Tenure</th>
+                      <th className="p-3 font-medium">Payments</th>
+                      <th className="p-3 font-medium">Timeline</th>
+                      <th className="p-3 font-medium">Eligibility Insights</th>
+                      <th className="p-3 font-medium text-right">Action</th>
+                    </tr>
+                  </thead>
 
-      <tbody>
-        {rows.map((r) => {
-          // 💡 Enhanced dummy data logic
-          const pledgedValue = r.amount * 1.1;
-          const eligibleValue = pledgedValue * (1 + (Math.random() - 0.5) * 0.1);
-          const diff = ((eligibleValue - pledgedValue) / pledgedValue) * 100;
-          const risk =
-            diff > 5 ? "Low" : diff < -5 ? "High" : "Medium";
-          const totalValue = eligibleValue + pledgedValue;
+                  <tbody>
+                    {rows.map((r) => {
+                      // 💡 Enhanced dummy data logic
+                      const pledgedValue = r.amount * 1.1;
+                      const eligibleValue = pledgedValue * (1 + (Math.random() - 0.5) * 0.1);
+                      const diff = ((eligibleValue - pledgedValue) / pledgedValue) * 100;
+                      const risk =
+                        diff > 5 ? "Low" : diff < -5 ? "High" : "Medium";
+                      const totalValue = eligibleValue + pledgedValue;
 
-          // 🎨 Color schemes based on risk
-          const riskColor =
-            risk === "Low"
-              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"
-              : risk === "Medium"
-              ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100"
-              : "bg-rose-50 text-rose-700 ring-1 ring-rose-100";
+                      // 🎨 Color schemes based on risk
+                      const riskColor =
+                        risk === "Low"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"
+                          : risk === "Medium"
+                            ? "bg-amber-50 text-amber-700 ring-1 ring-amber-100"
+                            : "bg-rose-50 text-rose-700 ring-1 ring-rose-100";
 
-          return (
-            <tr
-              key={r.id}
-              className="border-t hover:bg-muted/30 transition-colors duration-150"
-            >
-              <td className="p-3">
-                <div className="font-medium text-gray-900">{r.customer}</div>
-                <div className="text-xs text-muted-foreground">{r.id}</div>
-              </td>
+                      return (
+                        <tr
+                          key={r.id}
+                          className="border-t hover:bg-muted/30 transition-colors duration-150"
+                        >
+                          <td className="p-3">
+                            <div className="font-medium text-gray-900">{r.customer}</div>
+                            <div className="text-xs text-muted-foreground">{r.id}</div>
+                          </td>
 
-              <td className="p-3">
-                <div className="font-medium text-gray-900">
-                  Loan against {r.assetType}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Effective LTV {r.ltv}%
-                </div>
-              </td>
+                          <td className="p-3">
+                            <div className="font-medium text-gray-900">
+                              Loan against {r.assetType}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Effective LTV {r.ltv}%
+                            </div>
+                          </td>
 
-              <td className="p-3 font-semibold text-gray-800">
-                ₹{r.amount.toLocaleString()}
-              </td>
-              <td className="p-3 text-gray-700">{r.tenure}m</td>
+                          <td className="p-3 font-semibold text-gray-800">
+                            ₹{r.amount.toLocaleString()}
+                          </td>
+                          <td className="p-3 text-gray-700">{r.tenure}m</td>
 
-              <td className="p-3">
-                <div
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
-                    r.lastPayment.type === "Credit"
-                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"
-                      : "bg-rose-50 text-rose-700 ring-1 ring-rose-100"
-                  )}
-                >
-                  <CreditCard className="h-3.5 w-3.5" /> {r.lastPayment.type} ₹
-                  {r.lastPayment.amount.toLocaleString()}
-                </div>
-              </td>
+                          <td className="p-3">
+                            <div
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
+                                r.lastPayment.type === "Credit"
+                                  ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100"
+                                  : "bg-rose-50 text-rose-700 ring-1 ring-rose-100"
+                              )}
+                            >
+                              <CreditCard className="h-3.5 w-3.5" /> {r.lastPayment.type} ₹
+                              {r.lastPayment.amount.toLocaleString()}
+                            </div>
+                          </td>
 
-              <td className="p-3">
-                <Timeline steps={r.timeline} />
-              </td>
+                          <td className="p-3">
+                            <Timeline steps={r.timeline} />
+                          </td>
 
-              {/* 🌈 Enhanced Eligibility Insights Column */}
-              <td className="p-3">
-                <div className="bg-muted/20 rounded-xl p-2.5 shadow-sm border border-muted/40 hover:border-muted transition-all">
-                  <div className="flex justify-between text-sm font-medium text-gray-800">
-                    <span>Eligible:</span>
-                    <span>₹{eligibleValue.toFixed(0)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-700 mt-1">
-                    <span>Pledged:</span>
-                    <span>₹{pledgedValue.toFixed(0)}</span>
-                  </div>
+                          {/* 🌈 Enhanced Eligibility Insights Column */}
+                          <td className="p-3 align-top">
+                            <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-3 shadow-sm border border-slate-100 hover:shadow-md transition-all">
+                              <div className="flex justify-between items-center mb-2">
+                                <div className="text-sm font-semibold text-slate-900">Securities Overview</div>
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium border",
+                                    riskColor
+                                  )}
+                                >
+                                  Risk: {risk}
+                                </span>
+                              </div>
 
-                  <div className="flex justify-between items-center mt-2">
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-                        riskColor
-                      )}
-                    >
-                      Risk: {risk}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-xs font-semibold",
-                        diff >= 0 ? "text-emerald-600" : "text-rose-600"
-                      )}
-                    >
-                      {diff >= 0 ? "+" : ""}
-                      {diff.toFixed(2)}%
-                    </span>
-                  </div>
+                              {/* Eligible & Pledged */}
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div className="bg-slate-50 rounded-lg p-2 text-slate-700 border border-slate-100">
+                                  <div className="text-[11px] uppercase text-slate-500">Eligible</div>
+                                  <div className="font-semibold text-slate-900">₹{eligibleValue.toFixed(0)}</div>
+                                </div>
+                                <div className="bg-slate-50 rounded-lg p-2 text-slate-700 border border-slate-100">
+                                  <div className="text-[11px] uppercase text-slate-500">Pledged</div>
+                                  <div className="font-semibold text-slate-900">₹{pledgedValue.toFixed(0)}</div>
+                                </div>
+                              </div>
 
-                  {/* 💰 Total value */}
-                  <div className="border-t mt-2 pt-2 text-xs text-gray-600 flex justify-between">
-                    <span>Total Value:</span>
-                    <span className="font-semibold text-gray-900">
-                      ₹{totalValue.toFixed(0)}
-                    </span>
-                  </div>
-                </div>
-              </td>
+                              {/* Change */}
+                              <div className="flex justify-between items-center mt-2 text-xs">
+                                <span className="text-slate-500">Change</span>
+                                <span className={cn("font-semibold", diff >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                                  {diff >= 0 ? "+" : ""}
+                                  {diff.toFixed(2)}%
+                                </span>
+                              </div>
 
-              <td className="p-3 text-right space-x-2">
-                <Button size="sm" asChild variant="outline">
-                  <Link to={`/admin/${r.id}`}>View</Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant={r.status === "Completed" ? "secondary" : "default"}
-                  disabled={r.status === "Completed"}
-                  onClick={() => completeRow(r.id)}
-                >
-                  {r.status === "Completed" ? "Completed" : "Mark completed"}
-                </Button>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  </div>
-</CardContent>
+                              {/* Mini progress bar */}
+                              <div className="mt-2 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-1.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500"
+                                  style={{ width: `${Math.min(100, (pledgedValue / eligibleValue) * 100)}%` }}
+                                />
+                              </div>
+
+                              {/* Pre/Post loan impact */}
+                              <div className="mt-3 border-t pt-2 text-xs text-slate-600">
+                                <div className="flex justify-between">
+                                  <span>Before Loan</span>
+                                  <span>₹{(totalValue * 1.05).toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  <span>After Loan</span>
+                                  <span>₹{(totalValue * 0.95).toFixed(0)}</span>
+                                </div>
+                                <div className="mt-1 text-right text-[11px] italic text-muted-foreground">
+                                  (~impact -5% after lien)
+                                </div>
+                              </div>
+
+                              {/* Asset Breakdown */}
+                              <div className="mt-3 border-t pt-2">
+                                <div className="text-xs text-slate-600 mb-1">Asset Mix</div>
+                                <div className="space-y-1">
+                                  {[
+                                    { label: "Stocks", value: pledgedValue * 0.45 },
+                                    { label: "Mutual Funds", value: pledgedValue * 0.35 },
+                                    { label: "Insurance", value: pledgedValue * 0.20 },
+                                  ].map((a) => (
+                                    <div key={a.label} className="flex justify-between text-[11px] text-slate-700">
+                                      <span>{a.label}</span>
+                                      <span>₹{a.value.toFixed(0)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Total */}
+                              <div className="border-t mt-2 pt-2 flex justify-between text-xs text-slate-600">
+                                <span>Total Portfolio Value</span>
+                                <span className="font-semibold text-slate-900">₹{totalValue.toFixed(0)}</span>
+                              </div>
+                            </div>
+                          </td>
+
+
+                          <td className="p-3 text-right space-x-2">
+                            <Button size="sm" asChild variant="outline">
+                              <Link to={`/admin/${r.id}`}>View</Link>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={r.status === "Completed" ? "secondary" : "default"}
+                              disabled={r.status === "Completed"}
+                              onClick={() => completeRow(r.id)}
+                            >
+                              {r.status === "Completed" ? "Completed" : "Mark completed"}
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
 
 
           </Card>
@@ -193,11 +236,11 @@ export default function Admin() {
       prev.map((r) =>
         r.id === id && r.status !== 'Completed'
           ? {
-              ...r,
-              status: 'Completed',
-              timeline: [...r.timeline, { label: 'Completed', at: new Date().toISOString().slice(0, 10) }],
-              lastPayment: { type: 'Credit', amount: 0 },
-            }
+            ...r,
+            status: 'Completed',
+            timeline: [...r.timeline, { label: 'Completed', at: new Date().toISOString().slice(0, 10) }],
+            lastPayment: { type: 'Credit', amount: 0 },
+          }
           : r,
       ),
     );
