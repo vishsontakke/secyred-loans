@@ -107,6 +107,13 @@ export default function Index() {
   const [assetVerified, setAssetVerified] = useState<Record<string, boolean>>({});
   const [lienConsent, setLienConsent] = useState(false);
 
+  // Asset fetching consent and OTP
+  const [assetFetchConsent, setAssetFetchConsent] = useState(false);
+  const [assetFetchOtp, setAssetFetchOtp] = useState("");
+  const [assetFetchOtpSent, setAssetFetchOtpSent] = useState(false);
+  const [assetFetchVerified, setAssetFetchVerified] = useState(false);
+  const [isFetchingAssets, setIsFetchingAssets] = useState(false);
+
   const visibleHoldings = useMemo(() => holdings.filter(h => h.category === assetCategory), [assetCategory, holdings]);
 
   const portfolioValue = useMemo(
@@ -402,90 +409,205 @@ export default function Index() {
           {step === "Assets" && (
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Select assets to pledge</CardTitle>
+                <CardTitle>Fetch your asset portfolio</CardTitle>
                 <CardDescription>
-                  Choose units to pledge. Eligibility is computed from units × price × LTV.
+                  {!assetFetchVerified 
+                    ? "Authorize us to securely fetch your holdings from depositories, AMCs, and insurance providers."
+                    : "Select assets to pledge. Eligibility is computed from units × price × LTV."
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="mb-4 flex items-center gap-3">
-                  <Label>Asset type</Label>
-                  <Select value={assetCategory} onValueChange={(v) => setAssetCategory(v as AssetCategory)}>
-                    <SelectTrigger className="w-56"><SelectValue placeholder="Select asset" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Mutual Fund">Mutual funds</SelectItem>
-                      <SelectItem value="Stock">Stocks</SelectItem>
-                      <SelectItem value="Insurance">Insurance</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="overflow-hidden rounded-lg border">
-                  <div className="grid grid-cols-12 bg-muted/50 p-3 text-xs font-medium text-muted-foreground">
-                    <div className="col-span-5">Asset</div>
-                    <div className="col-span-2 text-right">Units</div>
-                    <div className="col-span-2 text-right">Price</div>
-                    <div className="col-span-1 text-right">LTV</div>
-                    <div className="col-span-2 text-right">Pledge Units</div>
-                  </div>
-                  {visibleHoldings.map((h) => {
-                    const pledged = selected[h.symbol] ?? 0;
-                    const rowClass = h.isEligible ? "bg-green-50/60" : "bg-red-50/60";
-                    return (
-                      <div key={h.symbol} className={`grid grid-cols-12 items-center border-t p-3 text-sm ${rowClass}`}>
-                        <div className="col-span-5">
-                          <div className="font-medium">{h.name}</div>
-                          <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{h.symbol} • {h.category}</span>
-                            {h.isEligible ? (
-                              <Badge className="bg-green-600 hover:bg-green-600">Eligible</Badge>
-                            ) : (
-                              <Badge variant="destructive">Not eligible</Badge>
-                            )}
+                {!assetFetchVerified ? (
+                  // Consent and OTP Section
+                  <div className="space-y-6">
+                    <div className="rounded-lg border border-muted bg-muted/20 p-4">
+                      <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed">
+                        <input 
+                          type="checkbox" 
+                          checked={assetFetchConsent} 
+                          onChange={(e) => setAssetFetchConsent(e.target.checked)}
+                          className="mt-0.5 flex-shrink-0"
+                        />
+                        <span className="text-muted-foreground">
+                          <strong className="text-foreground">Asset Fetch Authorization:</strong> I hereby authorize and consent to the Company to fetch and access my asset holdings information from the following sources:
+                          <ul className="mt-2 ml-4 space-y-1 list-disc">
+                            <li><strong>Mutual Funds:</strong> From Asset Management Companies (AMCs), Registrar and Transfer Agents (RTAs), and CAMS/Karvy repositories using my PAN and contact details.</li>
+                            <li><strong>Stocks & Securities:</strong> From Depositories (NSDL/CDSL) and my linked Demat account(s) to retrieve my equity holdings and portfolio.</li>
+                            <li><strong>Insurance Policies:</strong> From insurance providers (LIC, HDFC Life, etc.) to fetch policy details, surrender values, and ULIP holdings.</li>
+                          </ul>
+                          <p className="mt-2">
+                            I understand that this information will be used solely for determining my loan eligibility, assessing collateral value, and processing my loan application. My data will be handled as per applicable data protection laws and the Company's Privacy Policy. I can revoke this consent at any time by contacting customer support.
+                          </p>
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label>Verify your identity</Label>
+                        <p className="text-xs text-muted-foreground">
+                          We'll send a 6-digit OTP to your registered mobile number and email to verify and fetch your assets securely.
+                        </p>
+                        <Button
+                          variant="outline"
+                          disabled={!assetFetchConsent || assetFetchOtpSent}
+                          onClick={() => setAssetFetchOtpSent(true)}
+                          className="w-full"
+                        >
+                          {assetFetchOtpSent ? "OTP Sent to Mobile & Email" : "Send OTP to Fetch Assets"}
+                        </Button>
+                      </div>
+
+                      {assetFetchOtpSent && (
+                        <div className="space-y-2">
+                          <Label htmlFor="assetFetchOtp">Enter OTP</Label>
+                          <Input
+                            id="assetFetchOtp"
+                            placeholder="6-digit OTP"
+                            maxLength={6}
+                            value={assetFetchOtp}
+                            onChange={(e) => setAssetFetchOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          />
+                          <Button
+                            disabled={assetFetchOtp.length !== 6}
+                            onClick={() => {
+                              if (assetFetchOtp.length === 6) {
+                                setIsFetchingAssets(true);
+                                // Simulate asset fetching with animation
+                                setTimeout(() => {
+                                  setIsFetchingAssets(false);
+                                  setAssetFetchVerified(true);
+                                }, 3000); // 3 second loading animation
+                              }
+                            }}
+                            className="w-full bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700"
+                          >
+                            {isFetchingAssets ? "Fetching Assets..." : "Verify & Fetch Assets"}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    {isFetchingAssets && (
+                      <div className="rounded-lg border bg-muted/30 p-6">
+                        <div className="flex flex-col items-center justify-center space-y-4">
+                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-muted border-t-indigo-600"></div>
+                          <div className="space-y-2 text-center">
+                            <p className="font-medium">Fetching your assets...</p>
+                            <div className="text-sm text-muted-foreground space-y-1">
+                              <p className="animate-pulse">⚡ Connecting to CAMS & Karvy repositories...</p>
+                              <p className="animate-pulse delay-100">📊 Fetching mutual fund holdings from AMCs...</p>
+                              <p className="animate-pulse delay-200">🏦 Retrieving stock portfolio from NSDL/CDSL...</p>
+                              <p className="animate-pulse delay-300">🛡️ Accessing insurance policies...</p>
+                            </div>
                           </div>
                         </div>
-                        <div className="col-span-2 text-right">{h.qty}</div>
-                        <div className="col-span-2 text-right">₹{h.price.toLocaleString()}</div>
-                        <div className="col-span-1 text-right">{Math.round(h.ltv * 100)}%</div>
-                        <div className="col-span-2 text-right">
-                          <Input
-                            type="number"
-                            min={0}
-                            max={h.qty}
-                            value={pledged}
-                            disabled={!h.isEligible}
-                            onChange={(e) =>
-                              setSelected((s) => ({ ...s, [h.symbol]: Math.max(0, Math.min(Number(e.target.value || 0), h.qty)) }))
-                            }
-                          />
-                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 grid gap-2 text-sm md:grid-cols-3">
-                  <p className="text-muted-foreground">
-                    Portfolio value <span className="font-medium text-foreground">₹{Math.round(portfolioValue).toLocaleString()}</span>
-                  </p>
-                  <p className="text-muted-foreground">
-                    Pledged value <span className="font-medium text-foreground">₹{Math.round(pledgedValue).toLocaleString()}</span>
-                  </p>
-                  <p className="text-muted-foreground">
-                    Eligible up to <span className="font-semibold text-foreground">₹{eligible.toLocaleString()}</span>
-                  </p>
-                </div>
-                <div className="mt-6 flex items-center justify-between">
-                  <Button variant="outline" onClick={goPrev}>Back</Button>
-                  <Button
-                    disabled={!hasSelection || eligible <= 0}
-                    onClick={() => {
-                      setAmount(Math.min(eligible, Math.max(0, amount || Math.floor(eligible * 0.6))));
-                      goNext();
-                    }}
-                    className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700"
-                  >
-                    Continue
-                  </Button>
-                </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-4">
+                      <Button variant="outline" onClick={goPrev}>Back</Button>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span>Secured with bank-grade encryption</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Asset Selection Section (shown after verification)
+                  <>
+                    <div className="mb-4 rounded-lg border border-green-200 bg-green-50/50 p-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <span className="font-medium text-green-900">Assets fetched successfully!</span>
+                        <span className="text-green-700">Found {holdings.length} assets across categories</span>
+                      </div>
+                    </div>
+
+                    <div className="mb-4 flex items-center gap-3">
+                      <Label>Asset type</Label>
+                      <Select value={assetCategory} onValueChange={(v) => setAssetCategory(v as AssetCategory)}>
+                        <SelectTrigger className="w-56"><SelectValue placeholder="Select asset" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Mutual Fund">Mutual funds</SelectItem>
+                          <SelectItem value="Stock">Stocks</SelectItem>
+                          <SelectItem value="Insurance">Insurance</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="overflow-hidden rounded-lg border">
+                      <div className="grid grid-cols-12 bg-muted/50 p-3 text-xs font-medium text-muted-foreground">
+                        <div className="col-span-5">Asset</div>
+                        <div className="col-span-2 text-right">Units</div>
+                        <div className="col-span-2 text-right">Price</div>
+                        <div className="col-span-1 text-right">LTV</div>
+                        <div className="col-span-2 text-right">Pledge Units</div>
+                      </div>
+                      {visibleHoldings.map((h) => {
+                        const pledged = selected[h.symbol] ?? 0;
+                        const rowClass = h.isEligible ? "bg-green-50/60" : "bg-red-50/60";
+                        return (
+                          <div key={h.symbol} className={`grid grid-cols-12 items-center border-t p-3 text-sm ${rowClass}`}>
+                            <div className="col-span-5">
+                              <div className="font-medium">{h.name}</div>
+                              <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{h.symbol} • {h.category}</span>
+                                {h.isEligible ? (
+                                  <Badge className="bg-green-600 hover:bg-green-600">Eligible</Badge>
+                                ) : (
+                                  <Badge variant="destructive">Not eligible</Badge>
+                                )}
+                              </div>
+                            </div>
+                            <div className="col-span-2 text-right">{h.qty}</div>
+                            <div className="col-span-2 text-right">₹{h.price.toLocaleString()}</div>
+                            <div className="col-span-1 text-right">{Math.round(h.ltv * 100)}%</div>
+                            <div className="col-span-2 text-right">
+                              <Input
+                                type="number"
+                                min={0}
+                                max={h.qty}
+                                value={pledged}
+                                disabled={!h.isEligible}
+                                onChange={(e) =>
+                                  setSelected((s) => ({ ...s, [h.symbol]: Math.max(0, Math.min(Number(e.target.value || 0), h.qty)) }))
+                                }
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="mt-4 grid gap-2 text-sm md:grid-cols-3">
+                      <p className="text-muted-foreground">
+                        Portfolio value <span className="font-medium text-foreground">₹{Math.round(portfolioValue).toLocaleString()}</span>
+                      </p>
+                      <p className="text-muted-foreground">
+                        Pledged value <span className="font-medium text-foreground">₹{Math.round(pledgedValue).toLocaleString()}</span>
+                      </p>
+                      <p className="text-muted-foreground">
+                        Eligible up to <span className="font-semibold text-foreground">₹{eligible.toLocaleString()}</span>
+                      </p>
+                    </div>
+                    
+                    <div className="mt-6 flex items-center justify-between">
+                      <Button variant="outline" onClick={goPrev}>Back</Button>
+                      <Button
+                        disabled={!hasSelection || eligible <= 0}
+                        onClick={() => {
+                          setAmount(Math.min(eligible, Math.max(0, amount || Math.floor(eligible * 0.6))));
+                          goNext();
+                        }}
+                        className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700"
+                      >
+                        Continue
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
