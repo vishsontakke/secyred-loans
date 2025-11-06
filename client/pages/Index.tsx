@@ -100,6 +100,12 @@ export default function Index() {
   const [accepted, setAccepted] = useState(false);
   const [esignOtp, setEsignOtp] = useState("");
   const [esignComplete, setEsignComplete] = useState(false);
+  
+  // Asset verification OTPs
+  const [assetOtps, setAssetOtps] = useState<Record<string, string>>({});
+  const [assetOtpSent, setAssetOtpSent] = useState<Record<string, boolean>>({});
+  const [assetVerified, setAssetVerified] = useState<Record<string, boolean>>({});
+  const [lienConsent, setLienConsent] = useState(false);
 
   const visibleHoldings = useMemo(() => holdings.filter(h => h.category === assetCategory), [assetCategory, holdings]);
 
@@ -185,18 +191,36 @@ export default function Index() {
                     />
                   </div>
                 </div>
-                <div className="mt-6 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <ShieldCheck className="h-4 w-4" />
-                    Bank‑grade encryption. We never share your data.
+
+                
+                <div className="mt-6 space-y-4">
+                  <div className="rounded-lg border border-muted bg-muted/20 p-4">
+                    <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed">
+                      <input 
+                        type="checkbox" 
+                        checked={kycConsent} 
+                        onChange={(e) => setKycConsent(e.target.checked)}
+                        className="mt-0.5 flex-shrink-0"
+                      />
+                      <span className="text-muted-foreground">
+                        I hereby consent and authorize the Company to verify my identity and KYC details by fetching information from UIDAI (Aadhaar), PAN database, CIBIL, and other relevant government/financial databases. I understand that this information will be used solely for KYC compliance, creditworthiness assessment, and loan processing purposes. I acknowledge that my data will be handled as per applicable data protection laws and the Company's Privacy Policy.
+                      </span>
+                    </label>
                   </div>
-                  <Button
-                    disabled={!isProfileValid}
-                    onClick={() => isProfileValid && goNext()}
-                    className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700"
-                  >
-                    Continue
-                  </Button>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <ShieldCheck className="h-4 w-4" />
+                      Bank‑grade encryption. We never share your data.
+                    </div>
+                    <Button
+                      disabled={!isProfileValid || !kycConsent}
+                      onClick={() => isProfileValid && kycConsent && goNext()}
+                      className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700"
+                    >
+                      Continue
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -469,14 +493,118 @@ export default function Index() {
           {step === "Loan" && (
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle>Choose loan amount and tenure</CardTitle>
-                <CardDescription>Drag the slider to select amount up to your eligibility.</CardDescription>
+                <CardTitle>Verify pledged assets & finalize loan</CardTitle>
+                <CardDescription>Verify each asset with OTP before finalizing your loan amount.</CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Selected Assets List with OTP Verification */}
+                <div className="mb-6">
+                  <Label className="text-base">Selected assets for pledge</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-3">OTP will be sent to your registered mobile/email with each institution</p>
+                  <div className="space-y-3">
+                    {holdings
+                      .filter(h => (selected[h.symbol] ?? 0) > 0)
+                      .map((h) => {
+                        const pledgedQty = selected[h.symbol] ?? 0;
+                        const pledgedVal = pledgedQty * h.price;
+                        const isVerified = assetVerified[h.symbol] || false;
+                        const otpSent = assetOtpSent[h.symbol] || false;
+                        const otpValue = assetOtps[h.symbol] || "";
+
+                        return (
+                          <div key={h.symbol} className="rounded-lg border p-4 bg-muted/20">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium">{h.name}</p>
+                                  {isVerified && (
+                                    <Badge className="bg-green-600 hover:bg-green-600">
+                                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                                      Verified
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="mt-1 flex gap-4 text-xs text-muted-foreground">
+                                  <span>{h.symbol}</span>
+                                  <span>•</span>
+                                  <span>{h.category}</span>
+                                </div>
+                                <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                                  <div>
+                                    <span className="text-muted-foreground">Pledged units: </span>
+                                    <span className="font-medium">{pledgedQty}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Value: </span>
+                                    <span className="font-medium">₹{pledgedVal.toLocaleString()}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">LTV: </span>
+                                    <span className="font-medium">{Math.round(h.ltv * 100)}%</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Eligible: </span>
+                                    <span className="font-medium">₹{Math.floor(pledgedVal * h.ltv).toLocaleString()}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {/* OTP Verification Section */}
+                              <div className="flex flex-col gap-2 min-w-[200px]">
+                                {!isVerified && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={otpSent}
+                                      onClick={() => {
+                                        setAssetOtpSent(prev => ({ ...prev, [h.symbol]: true }));
+                                      }}
+                                      className="w-full"
+                                    >
+                                      {otpSent ? "OTP Sent" : "Send OTP"}
+                                    </Button>
+                                    {otpSent && (
+                                      <div className="flex gap-2">
+                                        <Input
+                                          placeholder="6-digit OTP"
+                                          maxLength={6}
+                                          value={otpValue}
+                                          onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                            setAssetOtps(prev => ({ ...prev, [h.symbol]: val }));
+                                          }}
+                                          className="h-8 text-sm"
+                                        />
+                                        <Button
+                                          size="sm"
+                                          disabled={otpValue.length !== 6}
+                                          onClick={() => {
+                                            if (otpValue.length === 6) {
+                                              setAssetVerified(prev => ({ ...prev, [h.symbol]: true }));
+                                            }
+                                          }}
+                                          className="h-8"
+                                        >
+                                          Verify
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+
+                {/* Loan Amount and Tenure Selection */}
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <div className="flex items-baseline justify-between">
-                      <Label>Amount</Label>
+                      <Label>Loan amount</Label>
                       <span className="text-sm text-muted-foreground">Eligible ₹{eligible.toLocaleString()}</span>
                     </div>
                     <div className="mt-3">
@@ -504,10 +632,11 @@ export default function Index() {
                   </div>
                   <div>
                     <Label>Tenure (months)</Label>
-                    <div className="mt-3 flex items-center gap-4">
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
                       {[3, 6, 9, 12, 18, 24].map((t) => (
                         <Button
                           key={t}
+                          size="sm"
                           variant={tenure === t ? "default" : "outline"}
                           onClick={() => setTenure(t)}
                         >
@@ -516,7 +645,7 @@ export default function Index() {
                       ))}
                     </div>
                     <div className="mt-6 rounded-lg border p-4 text-sm">
-                      <p className="font-medium">Estimated summary</p>
+                      <p className="font-medium">Loan summary</p>
                       <div className="mt-2 grid grid-cols-2 gap-2">
                         <span className="text-muted-foreground">Requested</span>
                         <span className="text-right font-medium">₹{amount.toLocaleString()}</span>
@@ -524,15 +653,53 @@ export default function Index() {
                         <span className="text-right font-medium">{tenure} months</span>
                         <span className="text-muted-foreground">Effective LTV</span>
                         <span className="text-right font-medium">{effectiveLtvPct}%</span>
+                        <span className="text-muted-foreground">Assets verified</span>
+                        <span className="text-right font-medium">
+                          {Object.values(assetVerified).filter(Boolean).length} / {Object.keys(selected).filter(k => selected[k] > 0).length}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Lien Creation Consent */}
+                <div className="mt-6">
+                  <div className="rounded-lg border border-muted bg-muted/20 p-4">
+                    <label className="flex cursor-pointer items-start gap-3 text-xs leading-relaxed">
+                      <input 
+                        type="checkbox" 
+                        checked={lienConsent} 
+                        onChange={(e) => setLienConsent(e.target.checked)}
+                        className="mt-0.5 flex-shrink-0"
+                      />
+                      <span className="text-muted-foreground">
+                        <strong className="text-foreground">Lien Marking Authorization:</strong> I hereby authorize and consent to the creation of a lien/pledge on the above-selected securities (mutual fund units, stocks, and/or insurance policies) in favor of the lending institution. I understand that:
+                        <ul className="mt-2 ml-4 space-y-1 list-disc">
+                          <li>The lien will be marked with the respective Asset Management Companies (AMC), Registrar and Transfer Agents (RTA), Depositories (NSDL/CDSL), and Insurance providers as applicable.</li>
+                          <li>The pledged securities will remain in my name and demat account/folio, but I will not be able to sell, transfer, or pledge them to any other party until the loan is fully repaid and the lien is released.</li>
+                          <li>The lending institution has the right to invoke the lien and liquidate the pledged securities in case of default in loan repayment, as per the terms and conditions of the loan agreement.</li>
+                          <li>Any dividends, bonuses, or corporate actions on the pledged securities will continue to accrue to my account, subject to the lien.</li>
+                          <li>I am responsible for ensuring adequate margin is maintained, and the lender may request additional collateral or partial repayment if the value of pledged assets falls below the required threshold.</li>
+                        </ul>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
                 <div className="mt-6 flex items-center justify-between">
                   <Button variant="outline" onClick={goPrev}>Back</Button>
                   <Button
-                    disabled={!isAmountValid}
-                    onClick={() => isAmountValid && goNext()}
+                    disabled={
+                      !isAmountValid || 
+                      !lienConsent ||
+                      Object.keys(selected).filter(k => selected[k] > 0).length !== Object.values(assetVerified).filter(Boolean).length
+                    }
+                    onClick={() => {
+                      if (isAmountValid && lienConsent && Object.keys(selected).filter(k => selected[k] > 0).length === Object.values(assetVerified).filter(Boolean).length) {
+                        goNext();
+                      }
+                    }}
                     className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white hover:from-indigo-700 hover:via-violet-700 hover:to-fuchsia-700"
                   >
                     Review
